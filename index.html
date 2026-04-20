@@ -4,6 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Hijos de Russ — Kill Team</title>
+<meta name="description" content="Referencia de batalla para Kill Team — Hijos de Russ / Space Wolves">
+<meta name="theme-color" content="#080c10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Hijos de Russ">
+<link rel="manifest" href="manifest.json">
+<script>
+  // Inline manifest for single-file PWA
+  const manifestData = {
+    name: "Hijos de Russ — Kill Team",
+    short_name: "Hijos de Russ",
+    description: "Referencia de batalla para Kill Team — Space Wolves",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#080c10",
+    theme_color: "#080c10",
+    orientation: "portrait",
+    icons: [
+      { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23080c10'/><text y='320' x='256' font-size='300' text-anchor='middle'>🐺</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+  const manifestURL = URL.createObjectURL(blob);
+  document.querySelector('link[rel="manifest"]') && (document.querySelector('link[rel="manifest"]').href = manifestURL);
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
