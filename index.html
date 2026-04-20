@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Hijos de Russ — Kill Team</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #080c10;
+    --bg2:      #0d1318;
+    --bg3:      #111820;
+    --plate:    #141e28;
+    --steel:    #1e2d3d;
+    --ice:      #a8d4e8;
+    --frost:    #6fb3d2;
+    --glacier:  #3a7fa0;
+    --silver:   #c8d8e0;
+    --rune:     #e8f4f8;
+    --gold:     #c8a050;
+    --gold2:    rgba(200,160,80,0.15);
+    --red:      #c03030;
+    --red2:     rgba(192,48,48,0.15);
+    --border:   rgba(107,179,210,0.2);
+    --border2:  rgba(107,179,210,0.1);
+    --border3:  rgba(107,179,210,0.05);
+    --sep:      rgba(107,179,210,0.12);
+    --glow:     rgba(107,179,210,0.15);
+    --text:     #e8f4f8;
+    --text2:    rgba(200,216,224,0.75);
+    --text3:    rgba(168,212,232,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 19px;
+    font-weight: 400;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* BACKGROUND — subtle plate texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(107,179,210,0.015) 40px, rgba(107,179,210,0.015) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(107,179,210,0.015) 40px, rgba(107,179,210,0.015) 41px),
+      radial-gradient(ellipse at 50% 0%, rgba(58,127,160,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  .header {
+    position: relative;
+    z-index: 10;
+    padding: 24px 20px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--frost), transparent);
+    opacity: 0.5;
+  }
+  .header-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--silver);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(107,179,210,0.3);
+  }
+  .header-title span { color: var(--frost); }
+  .rune-divider { display: none; }
+  .particles { display: none; }
+
+  /* SCREENS */
+  .screen { display: none; position: relative; z-index: 5; }
+  .screen.active { display: block; }
+
+  /* CLIP CORNER mixin — angular 40K style */
+  .clip {
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  }
+  .clip-sm {
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+  }
+
+  /* HOME */
+  .home-screen { padding: 20px 16px 40px; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    padding: 0 4px;
+    margin-bottom: 8px;
+    margin-top: 24px;
+  }
+
+  /* CATEGORIES GRID */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .category-card {
+    background: linear-gradient(135deg, var(--plate) 0%, var(--bg2) 100%);
+    border: 1px solid var(--border);
+    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+    padding: 18px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .category-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--frost), transparent);
+    opacity: 0.5;
+  }
+  .category-card:active { opacity: 0.6; background: var(--steel); }
+  .category-card.full-width { grid-column: 1 / -1; }
+  .cat-icon { font-size: 26px; margin-bottom: 8px; display: block; }
+  .cat-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: var(--silver);
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+  .cat-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--glacier);
+    margin-top: 4px;
+  }
+  .cat-accent { display: none; }
+
+  /* EQUIPMENT SELECTOR */
+  .equip-section { margin-bottom: 0; }
+  .equip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .equip-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+  }
+  .equip-toggle-btn {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--frost);
+    cursor: pointer;
+    padding: 4px 0;
+    text-transform: uppercase;
+  }
+  .equip-counter-row { margin-bottom: 10px; }
+  .equip-counter {
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-align: center;
+    padding: 14px 0;
+    border: 1px solid var(--border2);
+    background: var(--plate);
+    width: 100%;
+    display: block;
+    transition: all 0.3s;
+    color: var(--text3);
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+    text-transform: uppercase;
+  }
+  .equip-counter.full {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(200,160,80,0.08);
+    text-shadow: 0 0 10px rgba(200,160,80,0.4);
+  }
+  .equip-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 10px;
+  }
+  .equip-pill {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    padding: 8px 14px;
+    border: 1px solid var(--border2);
+    background: var(--plate);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+  }
+  .equip-pill:active { opacity: 0.6; }
+  .equip-pill.selected {
+    border-color: var(--frost);
+    background: rgba(107,179,210,0.12);
+    color: var(--frost);
+  }
+  .equip-pill.disabled { opacity: 0.3; cursor: default; }
+  .equip-pill.selected.disabled { opacity: 1; }
+  .equip-group-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+  .equip-selected-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--border2);
+    background: var(--plate);
+    margin-bottom: 8px;
+    align-items: center;
+    clip-path: polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px);
+  }
+  .equip-selected-tag {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: var(--frost);
+    background: rgba(107,179,210,0.1);
+    border: 1px solid var(--border);
+    padding: 2px 10px;
+    text-transform: uppercase;
+    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
+  }
+  .equip-empty-msg {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .equip-pills-wrapper {
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+    max-height: 600px;
+    opacity: 1;
+  }
+  .equip-pills-wrapper.collapsed { max-height: 0; opacity: 0; pointer-events: none; }
+
+  /* TRACKER */
+  .tracker-section { margin-top: 24px; }
+  .tracker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .tracker-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+  }
+  .reset-btn {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--red);
+    cursor: pointer;
+    text-transform: uppercase;
+    border: 1px solid rgba(192,48,48,0.3);
+    padding: 3px 10px;
+    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
+  }
+  .reset-btn:active { opacity: 0.5; }
+  .turn-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 14px 0;
+    margin-bottom: 16px;
+    background: var(--plate);
+    border: 1px solid var(--border);
+    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+    position: relative;
+  }
+  .turn-row::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--frost), transparent);
+    opacity: 0.4;
+  }
+  .turn-display {
+    font-family: 'Oswald', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--gold);
+    min-width: 120px;
+    text-align: center;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 0 0 15px rgba(200,160,80,0.4);
+  }
+  .turn-btn {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border);
+    background: var(--steel);
+    color: var(--frost);
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+    transition: opacity 0.15s;
+  }
+  .turn-btn:active { opacity: 0.5; }
+  .tracker-group { margin-bottom: 8px; }
+  .tracker-group-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    padding-left: 4px;
+  }
+  .ardid-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--plate);
+    border: 1px solid var(--border2);
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ardid-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--frost);
+    opacity: 0.4;
+  }
+  .ardid-row:active { opacity: 0.6; }
+  .ardid-row.used {
+    background: rgba(192,48,48,0.08);
+    border-color: rgba(192,48,48,0.25);
+  }
+  .ardid-row.used::before { background: var(--red); opacity: 0.6; }
+  .ardid-row.used::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(192,48,48,0.04) 10px, rgba(192,48,48,0.04) 11px);
+  }
+  .ardid-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+    clip-path: polygon(3px 0%, 100% 0%, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0% 100%, 0% 3px);
+  }
+  .ardid-row.used .ardid-checkbox { border-color: var(--red); background: var(--red); }
+  .ardid-checkbox::after {
+    content: '✕';
+    font-size: 11px;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-weight: 700;
+  }
+  .ardid-row.used .ardid-checkbox::after { opacity: 1; }
+  .ardid-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--silver);
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    transition: color 0.2s;
+    line-height: 1.3;
+    flex: 1;
+  }
+  .ardid-row.used .ardid-name { color: var(--text3); text-decoration: line-through; }
+  .ardid-info {
+    font-size: 17px;
+    color: var(--frost);
+    opacity: 0.6;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+    padding: 2px 4px;
+  }
+  .ardid-info:active { opacity: 1; }
+  .ardid-row.used .ardid-info { opacity: 0.2; }
+  .tracker-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 20px 0;
+  }
+
+  /* BREADCRUMB */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 0 18px;
+    flex-wrap: wrap;
+  }
+  .breadcrumb-home {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: var(--frost);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .breadcrumb-home:active { opacity: 0.5; }
+  .breadcrumb-sep {
+    font-size: 12px;
+    color: var(--text3);
+  }
+  .breadcrumb-cat {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: var(--frost);
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .breadcrumb-current {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+
+  /* LIST SCREEN */
+  .list-screen { padding: 16px; }
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: var(--frost);
+    cursor: pointer;
+    margin-bottom: 20px;
+    padding: 6px 0;
+    text-transform: uppercase;
+  }
+  .back-btn::before { content: '◄'; font-size: 10px; }
+  .list-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--silver);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(107,179,210,0.2);
+  }
+  .list-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--glacier);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .card-list { display: flex; flex-direction: column; gap: 4px; }
+  .card-item {
+    background: var(--plate);
+    border: 1px solid var(--border2);
+    border-left: 2px solid var(--glacier);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    clip-path: polygon(0% 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%);
+  }
+  .card-item:active { opacity: 0.6; border-left-color: var(--frost); }
+  .card-item-text { flex: 1; }
+  .card-item-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--silver);
+    text-transform: uppercase;
+  }
+  .card-item-type {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .card-item-arrow { color: var(--glacier); font-size: 16px; margin-left: 8px; flex-shrink: 0; }
+
+  .detail-original {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--glacier);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* DETAIL SELECT BAR */
+  .detail-select-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--plate);
+    border: 1px solid var(--border2);
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  }
+  .detail-select-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .detail-select-btn {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--frost);
+    cursor: pointer;
+    padding: 5px 14px;
+    border: 1px solid var(--border);
+    background: rgba(107,179,210,0.08);
+    text-transform: uppercase;
+    clip-path: polygon(4px 0%, 100% 0%, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0% 100%, 0% 4px);
+  }
+  .detail-select-btn:active { opacity: 0.5; }
+  .detail-select-btn.used { color: var(--red); border-color: rgba(192,48,48,0.4); background: var(--red2); }
+  .detail-select-btn.selected { color: var(--gold); border-color: rgba(200,160,80,0.4); background: var(--gold2); }
+  .detail-select-btn.disabled { color: var(--text3); border-color: var(--border2); background: transparent; opacity: 0.4; cursor: default; }
+
+  /* DETAIL SCREEN */
+  .detail-screen { padding: 16px 16px 40px; }
+  .detail-header { margin-bottom: 16px; }
+  .detail-category {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .detail-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--silver);
+    line-height: 1.1;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(107,179,210,0.2);
+  }
+  .detail-divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--frost), transparent);
+    margin: 14px 0;
+    opacity: 0.4;
+  }
+  .detail-card {
+    background: var(--plate);
+    border: 1px solid var(--border2);
+    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+    padding: 18px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .detail-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--frost), transparent);
+    opacity: 0.3;
+  }
+  .detail-flavor { display: none; }
+  .detail-body {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text2);
+    line-height: 1.75;
+  }
+  .detail-body strong { color: var(--silver); font-weight: 600; }
+  .detail-body em { color: var(--glacier); }
+  .rule-block {
+    background: rgba(107,179,210,0.05);
+    border-left: 2px solid var(--frost);
+    padding: 12px 14px;
+    margin: 10px 0;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text2);
+    position: relative;
+  }
+  .rule-block strong { color: var(--silver); font-weight: 600; }
+  .rule-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--frost);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .bullet-item {
+    padding: 5px 0 5px 18px;
+    position: relative;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--text2);
+  }
+  .bullet-item::before {
+    content: '▸';
+    position: absolute;
+    left: 2px;
+    color: var(--frost);
+    font-size: 10px;
+    top: 7px;
+  }
+  /* STATS TABLE */
+  .stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+  .stats-table th {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--sep);
+  }
+  .stats-table td {
+    text-align: center;
+    padding: 10px 8px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--silver);
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--sep);
+  }
+  /* WEAPONS TABLE */
+  .weapons-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+  .weapons-table th {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px solid var(--sep);
+  }
+  .weapons-table th:first-child { text-align: left; }
+  .weapons-table td {
+    padding: 10px 6px;
+    color: var(--text2);
+    text-align: center;
+    border-bottom: 1px solid var(--sep);
+    vertical-align: top;
+    font-size: 16px;
+  }
+  .weapons-table td:first-child { text-align: left; font-size: 14px; }
+  .weapons-table tr:last-child td { border-bottom: none; }
+  .weapon-name {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    color: var(--silver);
+    display: block;
+    text-transform: uppercase;
+  }
+  .weapon-sub { color: var(--text3); font-size: 11px; }
+  .weapon-rules { font-size: 11px; color: var(--glacier); text-align: left; }
+  .flavor-quote { display: none; }
+
+  /* SAGA LIST */
+  .saga-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--sep);
+  }
+  .saga-item:last-child { border-bottom: none; }
+  .saga-number {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .saga-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--frost);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  .saga-text {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.65;
+  }
+
+  /* ROSTER */
+  .roster-section { margin-bottom: 20px; }
+  .roster-section-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--sep);
+  }
+  .roster-role {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--sep);
+  }
+  .roster-role:last-child { border-bottom: none; }
+  .roster-role-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--silver);
+    text-transform: uppercase;
+  }
+  .roster-role-opts {
+    font-size: 13px;
+    color: var(--text3);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .roster-note {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-left: 2px solid var(--glacier);
+    padding: 10px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: var(--glacier);
+    line-height: 1.6;
+    margin-top: 12px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="header">
+    <div class="header-subtitle">Kill Team — Referencia de Batalla</div>
+    <div class="header-title">Hijos de <span>Russ</span></div>
+    <div class="rune-divider"></div>
+  </div>
+  <div class="home-screen">
+    <!-- EQUIPMENT SELECTOR -->
+    <div class="equip-section">
+      <div class="equip-header">
+        <div class="equip-title">🎒 Equipo de Batalla</div>
+        <div class="equip-toggle-btn" id="equip-toggle-btn" onclick="toggleEquipPanel()">▲ Colapsar</div>
+      </div>
+      <div class="equip-counter-row">
+        <div class="equip-counter not-full" id="equip-counter">0 / 4 seleccionados</div>
+      </div>
+      <div class="equip-selected-list" id="equip-selected-list">
+        <span class="equip-empty-msg">Selecciona hasta 4 cartas de equipo</span>
+      </div>
+      <div class="equip-pills-wrapper" id="equip-pills-wrapper">
+        <div class="equip-group-label">Equipo de Facción</div>
+        <div class="equip-pills" id="pills-faccion">
+          <div class="equip-pill" data-id="runas_guerra" onclick="toggleEquip(this)">Sellos de pureza</div>
+          <div class="equip-pill" data-id="despojos" onclick="toggleEquip(this)">Relicarios del Capítulo</div>
+          <div class="equip-pill" data-id="talismanes" onclick="toggleEquip(this)">Escudos decorativos</div>
+          <div class="equip-pill" data-id="auspex_eq" onclick="toggleEquip(this)">Auspex</div>
+        </div>
+        <div class="equip-group-label">Equipo Universal</div>
+        <div class="equip-pills" id="pills-universal">
+          <div class="equip-pill" data-id="barricada_portatil" onclick="toggleEquip(this)">Barricada Portátil</div>
+          <div class="equip-pill" data-id="barricadas_ligeras" onclick="toggleEquip(this)">Barricadas</div>
+          <div class="equip-pill" data-id="alambre_puas" onclick="toggleEquip(this)">Alambre de Púas</div>
+          <div class="equip-pill" data-id="escaleras" onclick="toggleEquip(this)">Escaleras</div>
+          <div class="equip-pill" data-id="deposito_municion" onclick="toggleEquip(this)">Depósito de Munición</div>
+          <div class="equip-pill" data-id="minas" onclick="toggleEquip(this)">Minas</div>
+          <div class="equip-pill" data-id="granadas_especiales" onclick="toggleEquip(this)">Granadas Especiales</div>
+          <div class="equip-pill" data-id="granadas_explosivas" onclick="toggleEquip(this)">Granadas Explosivas</div>
+          <div class="equip-pill" data-id="carga_demolicion" onclick="toggleEquip(this)">Carga de Demolición</div>
+          <div class="equip-pill" data-id="aparato_comunicaciones" onclick="toggleEquip(this)">Aparato de Comunicaciones</div>
+        </div>
+      </div>
+      <div class="tracker-divider"></div>
+    </div>
+
+    <!-- TRACKER -->
+    <div class="tracker-section">
+      <div class="tracker-header">
+        <div class="tracker-title">⚔ Tracker de Turno</div>
+        <div class="reset-btn" onclick="resetTracker()">Reset</div>
+      </div>
+      <div class="turn-row">
+        <div class="turn-btn" onclick="changeTurn(-1)">−</div>
+        <div class="turn-display" id="turn-display">Turno 1</div>
+        <div class="turn-btn" onclick="changeTurn(1)">+</div>
+      </div>
+      <div class="tracker-group">
+        <div class="tracker-group-label">Ardides de Estrategia</div>
+        <div class="ardid-row" id="track-saga_ardid" onclick="toggleArdid('saga_ardid')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Doctrina de combate</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('estrategia','saga_ardid',true)">ⓘ</div>
+        </div>
+        <div class="ardid-row" id="track-lobo_miedo" onclick="toggleArdid('lobo_miedo')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Y no conocerán el miedo</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('estrategia','lobo_miedo',true)">ⓘ</div>
+        </div>
+        <div class="ardid-row" id="track-runas_flexibles" onclick="toggleArdid('runas_flexibles')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Tácticas flexibles</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('estrategia','runas_flexibles',true)">ⓘ</div>
+        </div>
+        <div class="ardid-row" id="track-gran_caceria" onclick="toggleArdid('gran_caceria')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Indomitus</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('estrategia','gran_caceria',true)">ⓘ</div>
+        </div>
+      </div>
+      <div class="tracker-group">
+        <div class="tracker-group-label">Ardides de Tiroteo</div>
+        <div class="ardid-row" id="track-instinto_caza" onclick="toggleArdid('instinto_caza')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Ajustar doctrina</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('tiroteo','instinto_caza',true)">ⓘ</div>
+        </div>
+        <div class="ardid-row" id="track-carne_fenris" onclick="toggleArdid('carne_fenris')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Fisiología transhumana</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('tiroteo','carne_fenris',true)">ⓘ</div>
+        </div>
+        <div class="ardid-row" id="track-embestida" onclick="toggleArdid('embestida')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Asalto de choque</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('tiroteo','embestida',true)">ⓘ</div>
+        </div>
+        <div class="ardid-row" id="track-furia_manada" onclick="toggleArdid('furia_manada')">
+          <div class="ardid-checkbox"></div>
+          <div class="ardid-name">Ira de venganza</div>
+          <div class="ardid-info" onclick="event.stopPropagation();showDetail('tiroteo','furia_manada',true)">ⓘ</div>
+        </div>
+      </div>
+      <div class="tracker-divider"></div>
+    </div>
+
+    <div class="categories-grid">
+      <div class="category-card" onclick="showList('faccion')">
+        <span class="cat-icon">🐺</span>
+        <div class="cat-name">Reglas de Facción</div>
+        <div class="cat-count">3 cartas</div>
+        <div class="cat-accent"></div>
+      </div>
+      <div class="category-card" onclick="showList('equipo')">
+        <span class="cat-icon">⚔️</span>
+        <div class="cat-name">Equipo de Facción</div>
+        <div class="cat-count">4 cartas</div>
+        <div class="cat-accent"></div>
+      </div>
+      <div class="category-card" onclick="showList('estrategia')">
+        <span class="cat-icon">❄️</span>
+        <div class="cat-name">Ardides de Estrategia</div>
+        <div class="cat-count">4 ardides</div>
+        <div class="cat-accent"></div>
+      </div>
+      <div class="category-card" onclick="showList('tiroteo')">
+        <span class="cat-icon">🎯</span>
+        <div class="cat-name">Ardides de Tiroteo</div>
+        <div class="cat-count">4 ardides</div>
+        <div class="cat-accent"></div>
+      </div>
+      <div class="category-card full-width" onclick="showList('guerreros')">
+        <span class="cat-icon">🛡️</span>
+        <div class="cat-name">Operativos</div>
+        <div class="cat-count">Sarkalv · Sacerdote Lobo · Garras · Colmillos</div>
+        <div class="cat-accent"></div>
+      </div>
+      <div class="category-card full-width" onclick="showList('universal')">
+        <span class="cat-icon">🎒</span>
+        <div class="cat-name">Equipo Universal</div>
+        <div class="cat-count">Barricadas · Granadas · Minas · Más</div>
+        <div class="cat-accent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIST -->
+<div class="screen" id="screen-list">
+  <div class="list-screen">
+    <div class="breadcrumb">
+      <span class="breadcrumb-home" onclick="showHome()">Inicio</span>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current" id="breadcrumb-list-title"></span>
+    </div>
+    <div class="list-title" id="list-title"></div>
+    <div class="list-subtitle" id="list-subtitle"></div>
+    <div class="card-list" id="card-list"></div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="screen" id="screen-detail">
+  <div class="detail-screen">
+    <div class="breadcrumb">
+      <span class="breadcrumb-home" onclick="showHome()">Inicio</span>
+      <span class="breadcrumb-sep" id="breadcrumb-cat-sep">›</span>
+      <span class="breadcrumb-cat" id="breadcrumb-cat-title"></span>
+      <span class="breadcrumb-sep" id="breadcrumb-item-sep">›</span>
+      <span class="breadcrumb-current" id="breadcrumb-item-title"></span>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DATA = {
+  faccion: {
+    title: "Reglas de Facción",
+    subtitle: "Hijos de Russ",
+    items: [
+      {
+        id: "sagas_guerra",
+        name: "Sagas de Guerra",
+        original: "Tácticas de Capítulo",
+        type: "Regla de Facción",
+        render: () => `
+          <div class="detail-body">
+            Al elegir tu comando, elige una <strong>SAGA DE GUERRA</strong> primaria y otra secundaria que los agentes <strong>LOBO ESPACIAL</strong> amigos obtendrán durante esta batalla. Los efectos de múltiples instancias de la misma <strong>SAGA DE GUERRA</strong> no se acumulan.
+          </div>
+          <div class="rule-block" style="margin-top:14px">
+            <em>Nota:</em> Si estás jugando una serie de partidas, debes elegir la misma <strong>SAGA DE GUERRA</strong> primaria y secundaria en cada batalla (sigues pudiendo cambiar la secundaria con el ardid de estrategia <strong>Tácticas flexibles</strong>).
+          </div>
+        `
+      },
+      {
+        id: "lista_sagas",
+        name: "Sagas de Guerra — Lista",
+        original: "Opciones de Tácticas de Capítulo",
+        type: "Regla de Facción — Las 8 Sagas",
+        render: () => `
+          <div class="detail-card">
+            ${[
+              ["1","Furia del Wulfen","Agresivos","Las armas de combate de este guerrero tienen la regla de armas <strong>Desgarradora</strong>."],
+              ["2","Colmillo contra Colmillo","Duelistas","Siempre que este guerrero combata o contraataque, cada uno de tus éxitos normales puede bloquear un éxito crítico sin resolver (a menos que el arma del guerrero enemigo tenga la regla de arma <strong>Brutal</strong>)."],
+              ["3","Voluntad de Hierro","Resueltos","Puedes ignorar cualquier cambio al atributo <strong>LPA</strong> de este guerrero."],
+              ["4","Sigilosos","Sigilosos","Siempre que un guerrero dispare contra este guerrero, si puedes guardar alguna salvación por cobertura, puedes guardar una salvación adicional o guardarla como éxito crítico. No se acumula con salvaciones mejoradas por terreno Aventajado."],
+              ["5","Paso del Lobo","Móviles","Este guerrero puede Retroceder por 1 PA menos. Puede Cargar estando en zona de control enemiga, pudiendo abandonarla (se aplican los requisitos normales)."],
+              ["6","Piel de Fenris","Robustos","Siempre que un guerrero dispara contra este guerrero, los resultados de <strong>5+</strong> en los dados de defensa son éxitos críticos."],
+              ["7","Ojo del Depredador","Tiradores Certeros","Siempre que este guerrero dispara sin haber Cargado, Reposicionado ni Retrocedido en esa activación, sus armas bólter tienen la regla <strong>Severa</strong>."],
+              ["8","Rugido del Pack","Especialistas en Asedios","Las armas a distancia de este guerrero tienen la regla de arma <strong>Saturación</strong>."],
+            ].map(([n,name,orig,text]) => `
+              <div class="saga-item">
+                <div class="saga-number">SAGA ${n}</div>
+                <div class="saga-name">${name} <span style="font-family:'Crimson Pro',serif;font-weight:400;font-size:12px;color:var(--steel);font-style:italic;">(${orig})</span></div>
+                <div class="saga-text">${text}</div>
+              </div>
+            `).join('')}
+          </div>
+        `
+      },
+      {
+        id: "guerreros_fenris",
+        name: "Guerreros de Fenris",
+        original: "Astartes",
+        type: "Regla de Facción",
+        render: () => `
+          <div class="detail-body">
+            Durante la activación de cada agente <strong>LOBO ESPACIAL</strong> amigo, este puede realizar o bien dos acciones de <strong>Combatir</strong>, o bien dos acciones de <strong>Disparar</strong>. Si son dos acciones de Disparar, debe seleccionarse un arma bólter al menos para una de ellas, y si es un rifle bólter de francotirador o un bólter pesado, debe gastarse 1 PA adicional en la segunda acción si ambas usan esa arma.
+            <br><br>
+            Cada agente <strong>LOBO ESPACIAL</strong> amigo puede reaccionar sin importar cuál sea su orden.
+          </div>
+        `
+      }
+    ]
+  },
+  equipo: {
+    title: "Equipo de Facción",
+    subtitle: "Hijos de Russ",
+    items: [
+      {
+        id: "runas_guerra",
+        name: "Sellos de pureza",
+        original: "Runas de Guerra",
+        type: "Equipo de Facción",
+        render: () => `
+          <div class="detail-body">Una vez por punto de inflexión, cuando un agente <strong>LOBO ESPACIAL</strong> amigo dispare, combata o contraataque, si sacas dos o más fallos, puedes descartar uno de ellos para guardar otro como un <strong>éxito normal</strong> en su lugar.</div>
+        `
+      },
+      {
+        id: "despojos",
+        name: "Relicarios del Capítulo",
+        original: "Despojos de los Caídos",
+        type: "Equipo de Facción",
+        render: () => `
+          <div class="detail-body">Puedes usar el ardid de tiroteo <strong>Ira de venganza</strong> por <strong>0PM</strong> si el guerrero amigo especificado tiene una orden de trabarse.</div>
+        `
+      },
+      {
+        id: "talismanes",
+        name: "Escudos decorativos",
+        original: "Talismanes de Fenris",
+        type: "Equipo de Facción",
+        render: () => `
+          <div class="detail-body">Una vez por punto de inflexión, cuando un agente <strong>LOBO ESPACIAL</strong> amigo combate o contraataca, después de que tu oponente tire sus dados de ataque, pero antes de que se repitan tiradas, puedes usar esta regla. Si lo haces, tu oponente <strong>no puede guardar dados de ataque con un resultado menor que 6 como éxitos críticos</strong> durante esa secuencia (por ejemplo, debido a las reglas Letal, Desgarradora o Severa).</div>
+        `
+      },
+      {
+        id: "auspex",
+        name: "Auspex",
+        type: "Equipo de Facción",
+        render: () => `
+          <div class="detail-body">Una vez por punto de inflexión, cuando un agente <strong>LOBO ESPACIAL</strong> amigo realiza una acción de Disparar y estás eligiendo blanco válido, puedes usar esta regla. Si lo haces, hasta el final de la activación (o reacción), los guerreros enemigos a <strong>8" o menos</strong> de ese guerrero amigo <strong>no pueden estar ofuscados</strong>.</div>
+        `
+      }
+    ]
+  },
+  estrategia: {
+    title: "Ardides de Estrategia",
+    subtitle: "Hijos de Russ",
+    items: [
+      {
+        id: "saga_ardid",
+        name: "Doctrina de combate",
+        original: "Saga de Guerra",
+        type: "Ardid de Estrategia",
+        render: () => `
+          <div class="detail-body">
+            Elige una <strong>DOCTRINA DE COMBATE</strong> de las siguientes. Siempre que un agente <strong>LOBO ESPACIAL</strong> amigo haga X, sus armas tienen la regla <strong>Equilibrada</strong>. X depende de la <strong>DOCTRINA DE COMBATE</strong> elegida:
+          </div>
+          <div class="rule-block"><strong>Colmillo Lejano</strong> <em style="color:var(--text3);font-size:12px">(Doctrina devastadora)</em>: Disparar contra un guerrero a más de 6" de él.</div>
+          <div class="rule-block"><strong>Colmillo Cercano</strong> <em style="color:var(--text3);font-size:12px">(Doctrina táctica)</em>: Disparar contra un guerrero a 6" o menos de él.</div>
+          <div class="rule-block"><strong>Garra de Asalto</strong> <em style="color:var(--text3);font-size:12px">(Doctrina de asalto)</em>: Combatir o contraatacar.</div>
+        `
+      },
+      {
+        id: "lobo_miedo",
+        name: "Y no conocerán el miedo",
+        original: "El Lobo No Conoce el Miedo",
+        type: "Ardid de Estrategia",
+        render: () => `
+          <div class="detail-body">Puedes <strong>ignorar cualquier cambio a los atributos</strong> de agentes <strong>LOBO ESPACIAL</strong> amigos debido a estar lesionados (incluyendo los atributos de sus armas).</div>
+        `
+      },
+      {
+        id: "runas_flexibles",
+        name: "Tácticas flexibles",
+        original: "Runas Flexibles",
+        type: "Ardid de Estrategia",
+        render: () => `
+          <div class="detail-body">Cambia tu <strong>SAGA DE GUERRA</strong> secundaria. Ten en cuenta que este ardid solo dura hasta el final del punto de inflexión, tras lo cual recuperas tu <strong>SAGA DE GUERRA</strong> secundaria original.</div>
+        `
+      },
+      {
+        id: "gran_caceria",
+        name: "Indomitus",
+        original: "La Gran Cacería",
+        type: "Ardid de Estrategia",
+        render: () => `
+          <div class="detail-body">Siempre que un guerrero dispara contra un agente <strong>LOBO ESPACIAL</strong> amigo, si sacas <strong>dos o más fallos</strong>, puedes descartar uno de ellos para guardar el otro como <strong>éxito normal</strong> en su lugar.</div>
+        `
+      }
+    ]
+  },
+  tiroteo: {
+    title: "Ardides de Tiroteo",
+    subtitle: "Hijos de Russ",
+    items: [
+      {
+        id: "instinto_caza",
+        name: "Ajustar doctrina",
+        original: "Instinto de Caza",
+        type: "Ardid de Tiroteo",
+        render: () => `
+          <div class="detail-body">Usa este ardid durante la activación de un agente <strong>LOBO ESPACIAL</strong> amigo, antes o después de que realice una acción. Si has usado el ardid de estrategia <strong>Doctrina de combate</strong> durante este punto de inflexión, cambia la <strong>SAGA DE GUERRA</strong> que hayas elegido.</div>
+        `
+      },
+      {
+        id: "carne_fenris",
+        name: "Fisiología transhumana",
+        original: "Carne de Fenris",
+        type: "Ardid de Tiroteo",
+        render: () => `
+          <div class="detail-body">Usa este ardid cuando un guerrero dispare contra un agente <strong>LOBO ESPACIAL</strong> amigo, en el paso de tirar dados de defensa. Puedes guardar uno de tus <strong>éxitos normales como éxito crítico</strong> en su lugar.</div>
+        `
+      },
+      {
+        id: "embestida",
+        name: "Asalto de choque",
+        original: "Embestida del Lobo",
+        type: "Ardid de Tiroteo",
+        render: () => `
+          <div class="detail-body">
+            Usa este ardid cuando un agente <strong>LOBO ESPACIAL</strong> amigo realiza una acción de <strong>Combatir</strong> durante una activación en la que haya realizado una acción de <strong>Cargar</strong>, al inicio del paso de resolver dados de ataque. Hasta el final de esa acción:
+          </div>
+          <div class="bullet-item">Su arma de combate tiene la regla de arma <strong>Choque</strong>.</div>
+          <div class="bullet-item">La primera vez que golpees durante esa secuencia, inflige <strong>1 daño adicional</strong> (hasta un máximo de 7).</div>
+        `
+      },
+      {
+        id: "furia_manada",
+        name: "Ira de venganza",
+        original: "Furia de la Manada",
+        type: "Ardid de Tiroteo",
+        render: () => `
+          <div class="detail-body">Usa este ardid cuando un agente <strong>LOBO ESPACIAL</strong> amigo reaccione. Puede realizar una <strong>acción de 1PA adicional gratis</strong> durante esa reacción, pero ambas acciones deben ser distintas.</div>
+        `
+      }
+    ]
+  },
+  guerreros: {
+    title: "Operativos",
+    subtitle: "Cartas de los guerreros de la manada",
+    items: [
+      {
+        id: "sarkalv",
+        name: "Sarkalv el Marcado",
+        type: "Wolf Priest · Líder",
+        render: () => `
+          <table class="stats-table">
+            <tr>
+              <th>LPA</th><th>MOV.</th><th>SALV.</th><th>HERIDAS</th>
+            </tr>
+            <tr>
+              <td>▼3</td><td>6"</td><td>3+</td><td>15</td>
+            </tr>
+          </table>
+          <table class="weapons-table">
+            <tr>
+              <th>Arma</th><th>AT.</th><th>IMP.</th><th>DAÑO</th><th>Reglas</th>
+            </tr>
+            <tr>
+              <td><span class="weapon-name">Pistola de plasma</span><span class="weapon-sub">normal</span></td>
+              <td>4</td><td>3+</td><td>3/5</td>
+              <td class="weapon-rules">Alcance 8", Pen. 1</td>
+            </tr>
+            <tr>
+              <td><span class="weapon-name">Pistola de plasma</span><span class="weapon-sub">sobrecarga</span></td>
+              <td>4</td><td>3+</td><td>4/5</td>
+              <td class="weapon-rules">Alc. 8", Letal 5+, Pen. 1, Sobrecalentamiento</td>
+            </tr>
+            <tr>
+              <td><span class="weapon-name">Garra de energía</span></td>
+              <td>5</td><td>3+</td><td>5/7</td>
+              <td class="weapon-rules">Brutal</td>
+            </tr>
+          </table>
+          <div class="rule-block">
+            <div class="rule-name">Aullido de Mando</div>
+            Una vez por punto de inflexión, elige una opción:
+            <div class="bullet-item">Usar un ardid de tiroteo por <strong>0PM</strong> si este es el agente <strong>LOBO ESPACIAL</strong> especificado (excepto repetición de mando).</div>
+            <div class="bullet-item">Usar el ardid de estrategia <strong>Doctrina de combate</strong> cuando actives un agente <strong>LOBO ESPACIAL</strong> en la zona de aniquilación y fuera de zona de control enemiga (coste normal en PM). No puedes si ya usaste ese ardid este punto de inflexión.</div>
+            <div class="bullet-item">Usar el ardid de tiroteo <strong>Ajustar doctrina</strong> por <strong>0PM</strong> si este guerrero está en la zona de aniquilación y fuera de zona de control enemiga.</div>
+          </div>
+          <div class="rule-block">
+            <div class="rule-name">Piel de Fenris</div>
+            Una vez por batalla, cuando un dado de ataque inflija <strong>Daño normal</strong> a este guerrero, puedes ignorar ese daño infligido.
+          </div>
+        `
+      },
+      {
+        id: "granadero_sangriento",
+        name: "Granadero Sangriento",
+        type: "Operativo · Garra Sangrienta",
+        render: () => `
+          <table class="stats-table">
+            <tr><th>LPA</th><th>MOV.</th><th>SALV.</th><th>HERIDAS</th></tr>
+            <tr><td>▼3</td><td>6"</td><td>3+</td><td>14</td></tr>
+          </table>
+          <table class="weapons-table">
+            <tr><th>Arma</th><th>AT.</th><th>IMP.</th><th>DAÑO</th><th>Reglas</th></tr>
+            <tr>
+              <td><span class="weapon-name">Pistola bólter pesada</span></td>
+              <td>4</td><td>3+</td><td>3/4</td>
+              <td class="weapon-rules">Alc. 8", Críticos pen. 1</td>
+            </tr>
+            <tr>
+              <td><span class="weapon-name">Espada sierra</span></td>
+              <td>5</td><td>3+</td><td>4/5</td>
+              <td class="weapon-rules">—</td>
+            </tr>
+          </table>
+          <div class="rule-block">
+            <div class="rule-name">Granadero</div>
+            Este agente puede usar granadas frag y perforantes (ver equipo universal). Hacer esto no cuenta de cara a los usos limitados. Cuando lo hace, <strong>mejora en 1 el atributo Impactar</strong> de esa arma.
+          </div>
+          <div class="roster-note">LOBO ESPACIAL · IMPERIUM · ADEPTUS ASTARTES · GARRA SANGRIENTA · GRANADERO — Coste: 32</div>
+        `
+      },
+      {
+        id: "garra_sangrienta",
+        name: "Garra Sangrienta",
+        type: "Operativo · Combatiente",
+        render: () => `
+          <table class="stats-table">
+            <tr><th>LPA</th><th>MOV.</th><th>SALV.</th><th>HERIDAS</th></tr>
+            <tr><td>▼3</td><td>6"</td><td>3+</td><td>14</td></tr>
+          </table>
+          <table class="weapons-table">
+            <tr><th>Arma</th><th>AT.</th><th>IMP.</th><th>DAÑO</th><th>Reglas</th></tr>
+            <tr>
+              <td><span class="weapon-name">Pistola bólter pesada</span></td>
+              <td>4</td><td>3+</td><td>3/4</td>
+              <td class="weapon-rules">Alc. 8", Críticos pen. 1</td>
+            </tr>
+            <tr>
+              <td><span class="weapon-name">Espada sierra</span></td>
+              <td>5</td><td>3+</td><td>4/5</td>
+              <td class="weapon-rules">—</td>
+            </tr>
+          </table>
+          <div class="roster-note">LOBO ESPACIAL · IMPERIUM · ADEPTUS ASTARTES · GARRA SANGRIENTA · COMBATIENTE — Coste: 32</div>
+        `
+      },
+      {
+        id: "colmillo_largo",
+        name: "Colmillo Largo",
+        type: "Operativo · Tirador",
+        render: () => `
+          <table class="stats-table">
+            <tr><th>LPA</th><th>MOV.</th><th>SALV.</th><th>HERIDAS</th></tr>
+            <tr><td>▼3</td><td>6"</td><td>3+</td><td>14</td></tr>
+          </table>
+          <table class="weapons-table">
+            <tr><th>Arma</th><th>AT.</th><th>IMP.</th><th>DAÑO</th><th>Reglas</th></tr>
+            <tr><td><span class="weapon-name">Lanzagranadas aux. (frag)</span></td><td>4</td><td>3+</td><td>2/4</td><td class="weapon-rules">Área 2"</td></tr>
+            <tr><td><span class="weapon-name">Lanzagranadas aux. (perforante)</span></td><td>4</td><td>3+</td><td>4/5</td><td class="weapon-rules">Penetración 1</td></tr>
+            <tr><td><span class="weapon-name">Rifle bólter</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">Críticos pen. 1</td></tr>
+            <tr><td><span class="weapon-name">Rifle bólter automático</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">Ráfaga 1"</td></tr>
+            <tr><td><span class="weapon-name">R. bólter silencio (pesado)</span></td><td>4</td><td>3+</td><td>3/5</td><td class="weapon-rules">Críticos pen. 1, Letal 5+, Pesada (solo correr)</td></tr>
+            <tr><td><span class="weapon-name">R. bólter silencio (móvil)</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">Penetración 1</td></tr>
+            <tr><td><span class="weapon-name">Puños</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">Críticos pen. 1</td></tr>
+          </table>
+          <div class="roster-note">LOBO ESPACIAL · IMPERIUM · ADEPTUS ASTARTES · COLMILLO LARGO · TIRADOR — Coste: 32</div>
+        `
+      },
+      {
+        id: "colmillo_largo_pesado",
+        name: "Colmillo Largo Pesado",
+        type: "Operativo · Tirador Pesado",
+        render: () => `
+          <table class="stats-table">
+            <tr><th>LPA</th><th>MOV.</th><th>SALV.</th><th>HERIDAS</th></tr>
+            <tr><td>▼3</td><td>5"</td><td>3+</td><td>18</td></tr>
+          </table>
+          <table class="weapons-table">
+            <tr><th>Arma</th><th>AT.</th><th>IMP.</th><th>DAÑO</th><th>Reglas</th></tr>
+            <tr><td><span class="weapon-name">Bólter pesado (concentrado)</span></td><td>5</td><td>3+</td><td>4/5</td><td class="weapon-rules">Críticos pen. 1</td></tr>
+            <tr><td><span class="weapon-name">Bólter pesado (barrido)</span></td><td>4</td><td>3+</td><td>4/5</td><td class="weapon-rules">Críticos pen. 1, Ráfaga 1"</td></tr>
+            <tr><td><span class="weapon-name">Pistola bólter</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">Alcance 8"</td></tr>
+            <tr><td><span class="weapon-name">Puños</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">—</td></tr>
+          </table>
+          <div class="roster-note">LOBO ESPACIAL · IMPERIUM · ADEPTUS ASTARTES · COLMILLO LARGO · TIRADOR — Coste: 40</div>
+        `
+      },
+      {
+        id: "colmillo_largo_cazador",
+        name: "Colmillo Largo Cazador",
+        type: "Operativo · Francotirador",
+        render: () => `
+          <table class="stats-table">
+            <tr><th>LPA</th><th>MOV.</th><th>SALV.</th><th>HERIDAS</th></tr>
+            <tr><td>▼3</td><td>7"</td><td>3+</td><td>12</td></tr>
+          </table>
+          <table class="weapons-table">
+            <tr><th>Arma</th><th>AT.</th><th>IMP.</th><th>DAÑO</th><th>Reglas</th></tr>
+            <tr><td><span class="weapon-name">Pistola bólter</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">Alcance 8"</td></tr>
+            <tr><td><span class="weapon-name">R. francotirador (ejecutor)</span></td><td>4</td><td>2+</td><td>3/4</td><td class="weapon-rules">Buscadora (Ligero), Pesada (solo correr), Saturación, Silenciosa</td></tr>
+            <tr><td><span class="weapon-name">R. francotirador (hiperfrag)</span></td><td>4</td><td>2+</td><td>2/4</td><td class="weapon-rules">Área 1", Pesada (solo correr), Silenciosa</td></tr>
+            <tr><td><span class="weapon-name">R. francotirador (mortis)</span></td><td>4</td><td>2+</td><td>3/3</td><td class="weapon-rules">Devastadora 3, Pen. 1, Pesada (solo correr), Silenciosa</td></tr>
+            <tr><td><span class="weapon-name">Puños</span></td><td>4</td><td>3+</td><td>3/4</td><td class="weapon-rules">—</td></tr>
+          </table>
+          <div class="rule-block">
+            <div class="rule-name">Capa de camuflaje</div>
+            Siempre que un agente dispare contra este agente, ignora la regla de arma Saturación. Este agente tiene la <strong>DOCTRINA DE COMBATE Sigilosos (Sigilosos)</strong>. Si ya la habías elegido, puedes usar sus dos opciones (guardar dos salvaciones por cobertura; un éxito normal y uno crítico).
+          </div>
+          <div class="rule-block">
+            <div class="rule-name">Óptica — 1AP</div>
+            Hasta el inicio de la siguiente activación de este agente, siempre que dispare, los agentes enemigos <strong>no pueden estar ofuscados</strong>. No puede realizarse si está en zona de control enemiga.
+          </div>
+          <div class="roster-note">LOBO ESPACIAL · IMPERIUM · ADEPTUS ASTARTES · ELIMINADOR · FRANCOTIRADOR — Coste: 32</div>
+        `
+      }
+    ]
+  },
+  universal: {
+    title: "Equipo Universal",
+    subtitle: "Disponible para cualquier comando",
+    items: [
+      {
+        id: "barricada_portatil",
+        name: "Barricada Portátil",
+        type: "Equipo Universal · Terreno",
+        render: () => `
+          <div class="detail-body">
+            Una barricada portátil es terreno <strong>Ligero, Protector y Portátil</strong>, excepto por las patas, que son Insignificantes y Expuestas. Antes de la batalla, puedes desplegarla completamente en tu territorio, en el suelo de la zona de aniquilación y a más de 2" de todo otro elemento de terreno de equipo, punto de acceso y terreno Accesible.
+          </div>
+          <div class="rule-block"><strong>Protector:</strong> Mientras un agente se encuentre a cubierto tras este elemento de terreno, mejora en 1 su atributo Salvación (hasta un máximo de 2+).</div>
+          <div class="rule-block"><strong>Portátil:</strong> Solo otorga cobertura mientras un agente esté conectado a él y el escudo esté interpuesto (ignora sus pies).</div>
+          <div class="detail-body" style="margin-top:12px">Los agentes conectados a su parte interior pueden realizar la siguiente acción única:</div>
+          <div class="rule-block" style="margin-top:8px">
+            <div class="rule-name">Moverse con Barricada — 1PA</div>
+            Igual que Reposicionarse salvo que el agente no puede moverse más que su Movimiento menos 2" y no puede trepar, dejarse caer ni saltar. Antes de moverse, retira la barricada. Después, despliégala conectada de nuevo (no puede estar a 2" o menos de otros elementos de equipo, puntos de acceso o terreno Accesible). Si no es posible, no se vuelve a desplegar.<br><br>
+            No puede realizarse si el agente está en zona de control enemiga, ni en la misma activación en que haya Retrocedido o Cargado.
+          </div>
+        `
+      },
+      {
+        id: "barricadas_ligeras",
+        name: "Barricadas (Ligeras y Pesada)",
+        type: "Equipo Universal · Terreno",
+        render: () => `
+          <div class="rule-block">
+            <div class="rule-name">2 Barricadas Ligeras</div>
+            Estas barreras ofrecen buena protección contra disparos de pequeño y mediano calibre. Son terreno <strong>Ligero</strong>, excepto los pies (Insignificantes y Expuestos). Despliega cualquier número de ellas completamente dentro de tu territorio, en el suelo de la zona de aniquilación y a más de 2" de todo otro elemento de equipo, punto de acceso y terreno Accesible.
+          </div>
+          <div class="rule-block">
+            <div class="rule-name">1 Barricada Pesada</div>
+            Un imponente bloque de plastiacero y adamantita. Es terreno <strong>Pesado</strong>. Despliégala completamente a 4" o menos de tu zona de descenso, en el suelo de la zona de aniquilación y a más de 2" de todo otro elemento de equipo, punto de acceso y terreno Accesible.
+          </div>
+        `
+      },
+      {
+        id: "alambre_puas",
+        name: "Alambre de Púas",
+        type: "Equipo Universal · Terreno",
+        render: () => `
+          <div class="detail-body">
+            El alambre de púas es terreno <strong>Expuesto y Obstructor</strong>. Antes de la batalla, despliégalo completamente dentro de tu territorio en el suelo de la zona de aniquilación y a más de 2" de todo otro elemento de equipo, puntos de acceso y terreno Accesible.
+          </div>
+          <div class="rule-block"><strong>Obstructor:</strong> Cuando un agente vaya a cruzar por encima de este elemento estando a 1" o menos del mismo, trata la distancia como 1" adicional.</div>
+        `
+      },
+      {
+        id: "escaleras",
+        name: "Escaleras",
+        type: "Equipo Universal · Terreno",
+        render: () => `
+          <div class="detail-body">Son terreno <strong>Insignificante y Expuesto</strong>. Despliega cualquier número de ellas:</div>
+          <div class="bullet-item">Completamente dentro de tu territorio.</div>
+          <div class="bullet-item">En vertical contra terreno de al menos 2" de altura.</div>
+          <div class="bullet-item">A más de 2" de otros elementos de terreno de equipo.</div>
+          <div class="bullet-item">A más de 1" de puertas y puntos de acceso.</div>
+          <div class="rule-block" style="margin-top:10px">Una vez por acción, cuando un agente trepe el elemento de terreno contra el que se apoya una escalera, trata la distancia vertical como <strong>1"</strong> si la escalera está dentro de la zona de control del agente durante todo el movimiento de trepar.</div>
+        `
+      },
+      {
+        id: "deposito_municion",
+        name: "Depósito de Munición",
+        type: "Equipo Universal",
+        render: () => `
+          <div class="detail-body">Antes de la batalla, despliega uno de tus marcadores de Depósito de munición completamente dentro de tu territorio. Los agentes amigos pueden realizar la siguiente misión:</div>
+          <div class="rule-block" style="margin-top:10px">
+            <div class="rule-name">Recarga de Munición — 0PA</div>
+            Uno de tus marcadores de Depósito de munición controlado por el agente activo es usado este punto de inflexión.<br><br>
+            Hasta el inicio del siguiente punto de inflexión, cuando este agente dispare con un arma de su tarjeta de datos, puedes <strong>repetir uno de tus dados de ataque</strong>.<br><br>
+            No puede realizarse si el agente está en zona de control enemiga, si el marcador no es tuyo, o si el marcador ya fue usado este punto de inflexión.
+          </div>
+        `
+      },
+      {
+        id: "minas",
+        name: "Minas",
+        type: "Equipo Universal",
+        render: () => `
+          <div class="detail-body">Antes de la batalla, despliega hasta 1 de tus marcadores de Minas completamente dentro de tu territorio y a más de 2" de todo otro marcador, punto de acceso y terreno Accesible.</div>
+          <div class="rule-block" style="margin-top:10px">La primera vez que ese marcador quede dentro de la zona de control de un agente, retira el marcador e inflige <strong>1D3+3 puntos de daño</strong> al agente.</div>
+        `
+      },
+      {
+        id: "granadas_especiales",
+        name: "Granadas Especiales",
+        type: "Equipo Universal",
+        render: () => `
+          <div class="detail-body">Al elegir este equipo, selecciona dos granadas especiales (<strong>2 de humo, 2 aturdidoras, o 1 de humo y 1 aturdidora</strong>). Cada selección es una acción única que pueden realizar tus agentes, pero tu comando solo podrá realizarla un número total de veces igual a tu selección. No puede realizarse si el agente está en zona de control enemiga.</div>
+          <div class="rule-block" style="margin-top:12px">
+            <div class="rule-name">Granada de Humo — 1PA</div>
+            Coloca un marcador a 6" o menos del agente (visible, o en terreno Aventajado visible). Genera área de humo de 1" horizontal e ilimitada verticalmente. Agentes completamente dentro están <strong>ofuscados</strong> para agentes a más de 2". Armas con Penetración 2 pasan a Penetración 1 contra ellos.<br><br>
+            En la siguiente fase de estrategia, tira 1D3. Retira el marcador tras ese número de activaciones o al final del punto de inflexión (lo que ocurra antes).
+          </div>
+          <div class="rule-block">
+            <div class="rule-name">Granada Aturdidora — 1PA</div>
+            Elige un agente enemigo a 6" o menos, visible. Ese agente y cada agente a 1" o menos hace un <strong>chequeo de aturdimiento</strong>: tira 1D6, si el resultado es 3+, resta 1 a su LPA hasta el final de su siguiente activación.
+          </div>
+        `
+      },
+      {
+        id: "granadas_explosivas",
+        name: "Granadas Explosivas",
+        type: "Equipo Universal",
+        render: () => `
+          <div class="detail-body">Al elegir este equipo, selecciona dos granadas explosivas (<strong>2 frag, 2 perforantes, o 1 frag y 1 perforante</strong>). Cada selección es un arma a distancia que pueden usar tus agentes, pero tu comando solo podrá usarla un número total de veces igual a tu selección.</div>
+          <table class="weapons-table" style="margin-top:14px">
+            <tr><th>Arma</th><th>AT.</th><th>IMP.</th><th>DAÑO</th><th>Reglas</th></tr>
+            <tr>
+              <td><span class="weapon-name">Granada frag</span></td>
+              <td>4</td><td>4+</td><td>2/4</td>
+              <td class="weapon-rules">Alc. 6", Área 2", Saturación</td>
+            </tr>
+            <tr>
+              <td><span class="weapon-name">Granada perforante</span></td>
+              <td>4</td><td>4+</td><td>4/5</td>
+              <td class="weapon-rules">Alc. 6", Pen. 1, Saturación</td>
+            </tr>
+          </table>
+        `
+      },
+      {
+        id: "carga_demolicion",
+        name: "Carga de Demolición",
+        type: "Equipo Universal",
+        render: () => `
+          <div class="detail-body">Una vez por batalla, cuando un agente amigo realiza una acción de <strong>Brecha</strong>, puedes usar esta regla. Si lo haces, ese agente puede realizar esa acción por <strong>1 PA menos</strong> (hasta un mínimo de 1PA) como si tuviera las palabras "marcador de brecha" en su tarjeta de datos.</div>
+        `
+      },
+      {
+        id: "aparato_comunicaciones",
+        name: "Aparato de Comunicaciones",
+        type: "Equipo Universal",
+        render: () => `
+          <div class="detail-body">Antes de la batalla, despliega uno de tus marcadores de aparato de comunicaciones completamente dentro de tu territorio. Mientras un agente amigo controle este marcador, <strong>suma 3"</strong> a los requisitos de distancia de sus reglas <strong>APOYO</strong> que se refieran a agentes amigos (ej: "a 6" o menos" pasa a ser "a 9" o menos").</div>
+          <div class="rule-block" style="margin-top:10px">No puedes beneficiarte de los marcadores de aparato de comunicaciones de tu oponente.</div>
+        `
+      }
+    ]
+  }
+};
+
+// ── PARTICLES ────────────────────────────────────────────────────────────────
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random()*100}%;
+      width: ${Math.random()*2+1}px;
+      height: ${Math.random()*2+1}px;
+      animation-duration: ${Math.random()*20+15}s;
+      animation-delay: ${Math.random()*20}s;
+      --drift: ${(Math.random()-0.5)*100}px;
+    `;
+    container.appendChild(p);
+  }
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+let currentCategory = null;
+
+function showHome() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-home').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showList(category) {
+  currentCategory = category;
+  const data = DATA[category];
+  document.getElementById('list-title').textContent = data.title;
+  document.getElementById('list-subtitle').textContent = data.subtitle;
+  document.getElementById('breadcrumb-list-title').textContent = data.title;
+  const list = document.getElementById('card-list');
+  list.innerHTML = data.items.map(item => `
+    <div class="card-item" onclick="showDetail('${category}','${item.id}')">
+      <div class="card-item-text">
+        <div class="card-item-name">${item.name}${item.original ? ` <span style="font-size:12px;color:var(--text3);font-weight:400;">(${item.original})</span>` : ''}</div>
+        <div class="card-item-type">${item.type}</div>
+      </div>
+      <span class="card-item-arrow">›</span>
+    </div>
+  `).join('');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-list').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// Maps to link detail items to their tracker/equip IDs
+const ARDID_MAP = {
+  'saga_ardid': 'saga_ardid', 'lobo_miedo': 'lobo_miedo',
+  'runas_flexibles': 'runas_flexibles', 'gran_caceria': 'gran_caceria',
+  'instinto_caza': 'instinto_caza', 'carne_fenris': 'carne_fenris',
+  'embestida': 'embestida', 'furia_manada': 'furia_manada'
+};
+const EQUIP_MAP = {
+  'runas_guerra': 'runas_guerra', 'despojos': 'despojos',
+  'talismanes': 'talismanes', 'auspex': 'auspex_eq',
+  'barricada_portatil': 'barricada_portatil', 'barricadas_ligeras': 'barricadas_ligeras',
+  'alambre_puas': 'alambre_puas', 'escaleras': 'escaleras',
+  'deposito_municion': 'deposito_municion', 'minas': 'minas',
+  'granadas_especiales': 'granadas_especiales', 'granadas_explosivas': 'granadas_explosivas',
+  'carga_demolicion': 'carga_demolicion', 'aparato_comunicaciones': 'aparato_comunicaciones'
+};
+
+function getSelectionBar(category, itemId) {
+  if (category === 'estrategia' || category === 'tiroteo') {
+    const ardidId = ARDID_MAP[itemId];
+    if (!ardidId) return '';
+    const used = usedArdids.has(ardidId);
+    return `<div class="detail-select-bar">
+      <div class="detail-select-label">${used ? '✕ Usado este turno' : '◯ Sin usar'}</div>
+      <div class="detail-select-btn ${used ? 'used' : ''}" onclick="toggleArdidFromDetail('${ardidId}')">${used ? 'Desmarcar' : 'Marcar como usado'}</div>
+    </div>`;
+  }
+  if (category === 'equipo') {
+    const equipId = EQUIP_MAP[itemId];
+    if (!equipId) return '';
+    const selected = selectedEquip.has(equipId);
+    const full = selectedEquip.size >= MAX_EQUIP && !selected;
+    return `<div class="detail-select-bar">
+      <div class="detail-select-label">${selected ? '✓ Seleccionado' : full ? 'Máximo alcanzado' : '◯ No seleccionado'}</div>
+      <div class="detail-select-btn ${selected ? 'selected' : full ? 'disabled' : ''}" onclick="toggleEquipFromDetail('${equipId}')">${selected ? 'Quitar del equipo' : 'Añadir al equipo'}</div>
+    </div>`;
+  }
+  if (category === 'universal') {
+    const equipId = EQUIP_MAP[itemId];
+    if (!equipId) return '';
+    const selected = selectedEquip.has(equipId);
+    const full = selectedEquip.size >= MAX_EQUIP && !selected;
+    return `<div class="detail-select-bar">
+      <div class="detail-select-label">${selected ? '✓ Seleccionado' : full ? 'Máximo alcanzado' : '◯ No seleccionado'}</div>
+      <div class="detail-select-btn ${selected ? 'selected' : full ? 'disabled' : ''}" onclick="toggleEquipFromDetail('${equipId}')">${selected ? 'Quitar del equipo' : 'Añadir al equipo'}</div>
+    </div>`;
+  }
+  return '';
+}
+
+function toggleArdidFromDetail(id) {
+  toggleArdid(id);
+  // Refresh the selection bar
+  const bar = document.querySelector('.detail-select-bar');
+  if (bar) {
+    const used = usedArdids.has(id);
+    bar.querySelector('.detail-select-label').textContent = used ? '✕ Usado este turno' : '◯ Sin usar';
+    const btn = bar.querySelector('.detail-select-btn');
+    btn.textContent = used ? 'Desmarcar' : 'Marcar como usado';
+    btn.className = 'detail-select-btn ' + (used ? 'used' : '');
+  }
+}
+
+function toggleEquipFromDetail(id) {
+  const pill = document.querySelector(`.equip-pill[data-id="${id}"]`);
+  if (pill) {
+    toggleEquip(pill);
+  } else {
+    // Toggle directly
+    if (selectedEquip.has(id)) {
+      selectedEquip.delete(id);
+      equipPanelOpen = true;
+    } else {
+      if (selectedEquip.size >= MAX_EQUIP) return;
+      selectedEquip.add(id);
+      if (selectedEquip.size >= MAX_EQUIP) equipPanelOpen = false;
+    }
+    renderEquip();
+  }
+  // Refresh the selection bar
+  const bar = document.querySelector('.detail-select-bar');
+  if (bar) {
+    const selected = selectedEquip.has(id);
+    const full = selectedEquip.size >= MAX_EQUIP && !selected;
+    bar.querySelector('.detail-select-label').textContent = selected ? '✓ Seleccionado' : full ? 'Máximo alcanzado' : '◯ No seleccionado';
+    const btn = bar.querySelector('.detail-select-btn');
+    btn.textContent = selected ? 'Quitar del equipo' : 'Añadir al equipo';
+    btn.className = 'detail-select-btn ' + (selected ? 'selected' : full ? 'disabled' : '');
+  }
+}
+
+function showDetail(category, itemId, fromHome) {
+  const data = DATA[category];
+  const item = data.items.find(i => i.id === itemId);
+
+  // Breadcrumb
+  const catEl = document.getElementById('breadcrumb-cat-title');
+  const catSep = document.getElementById('breadcrumb-cat-sep');
+  const itemSep = document.getElementById('breadcrumb-item-sep');
+  const itemEl = document.getElementById('breadcrumb-item-title');
+
+  if (fromHome) {
+    catEl.textContent = '';
+    catSep.style.display = 'none';
+    itemSep.style.display = 'none';
+    itemEl.textContent = item.name;
+    catEl.onclick = null;
+  } else {
+    catEl.textContent = data.title;
+    catSep.style.display = '';
+    itemSep.style.display = '';
+    itemEl.textContent = item.name;
+    catEl.onclick = () => showList(category);
+    catEl.style.cursor = 'pointer';
+  }
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-header">
+      <div class="detail-category">${item.type}</div>
+      <div class="detail-title">${item.name}${item.original ? `<span class="detail-original">${item.original}</span>` : ''}</div>
+    </div>
+    ${getSelectionBar(category, itemId)}
+    <div class="detail-divider"></div>
+    <div class="detail-card">${item.render()}</div>
+  `;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-detail').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── EQUIPMENT SELECTOR ───────────────────────────────────────────────────────
+const MAX_EQUIP = 4;
+let selectedEquip = new Set();
+let equipPanelOpen = true;
+
+function toggleEquipPanel() {
+  equipPanelOpen = !equipPanelOpen;
+  renderEquip();
+}
+
+function toggleEquip(pill) {
+  const id = pill.dataset.id;
+  if (selectedEquip.has(id)) {
+    selectedEquip.delete(id);
+    equipPanelOpen = true; // reopen if deselecting
+  } else {
+    if (selectedEquip.size >= MAX_EQUIP) return;
+    selectedEquip.add(id);
+    if (selectedEquip.size >= MAX_EQUIP) equipPanelOpen = false; // auto-collapse when full
+  }
+  renderEquip();
+}
+
+function renderEquip() {
+  const count = selectedEquip.size;
+  const counter = document.getElementById('equip-counter');
+  counter.textContent = count + ' / 4 seleccionados';
+  counter.className = 'equip-counter ' + (count >= MAX_EQUIP ? 'full' : 'not-full');
+
+  // Collapse/expand pills
+  const wrapper = document.getElementById('equip-pills-wrapper');
+  const btn = document.getElementById('equip-toggle-btn');
+  if (equipPanelOpen) {
+    wrapper.classList.remove('collapsed');
+    btn.textContent = '▲ Colapsar';
+  } else {
+    wrapper.classList.add('collapsed');
+    btn.textContent = '▼ Editar';
+  }
+
+  // Update pills state
+  document.querySelectorAll('.equip-pill').forEach(pill => {
+    const id = pill.dataset.id;
+    const isSel = selectedEquip.has(id);
+    const isFull = count >= MAX_EQUIP && !isSel;
+    pill.className = 'equip-pill' + (isSel ? ' selected' : '') + (isFull ? ' disabled' : '');
+  });
+
+  // Update selected summary
+  const list = document.getElementById('equip-selected-list');
+  if (count === 0) {
+    list.innerHTML = '<span class="equip-empty-msg">Selecciona hasta 4 cartas de equipo</span>';
+  } else {
+    const labels = {
+      runas_guerra: 'Sellos de pureza', despojos: 'Relicarios del Capítulo',
+      talismanes: 'Escudos decorativos', auspex_eq: 'Auspex',
+      barricada_portatil: 'Barricada Portátil', barricadas_ligeras: 'Barricadas',
+      alambre_puas: 'Alambre de Púas', escaleras: 'Escaleras',
+      deposito_municion: 'Depósito de Munición', minas: 'Minas',
+      granadas_especiales: 'Granadas Especiales', granadas_explosivas: 'Granadas Explosivas',
+      carga_demolicion: 'Carga de Demolición', aparato_comunicaciones: 'Aparato Com.'
+    };
+    list.innerHTML = [...selectedEquip].map(id =>
+      `<span class="equip-selected-tag">${labels[id] || id}</span>`
+    ).join('');
+  }
+}
+
+// ── TRACKER ──────────────────────────────────────────────────────────────────
+let turn = 1;
+let usedArdids = new Set();
+
+function toggleArdid(id) {
+  if (usedArdids.has(id)) usedArdids.delete(id);
+  else usedArdids.add(id);
+  renderTracker();
+}
+
+function changeTurn(delta) {
+  turn = Math.max(1, turn + delta);
+  if (delta > 0) usedArdids.clear();
+  renderTracker();
+}
+
+function resetTracker() {
+  turn = 1;
+  usedArdids.clear();
+  selectedEquip.clear();
+  equipPanelOpen = true;
+  renderEquip();
+  renderTracker();
+}
+
+function renderTracker() {
+  document.getElementById('turn-display').textContent = 'Turno ' + turn;
+  ['saga_ardid','lobo_miedo','runas_flexibles','gran_caceria',
+   'instinto_caza','carne_fenris','embestida','furia_manada'].forEach(id => {
+    const el = document.getElementById('track-' + id);
+    if (el) el.classList.toggle('used', usedArdids.has(id));
+  });
+}
+
+createParticles();
+renderEquip();
+renderTracker();
+</script>
+</body>
+</html>
