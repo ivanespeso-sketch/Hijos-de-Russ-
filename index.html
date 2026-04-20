@@ -196,6 +196,96 @@
   }
   .cat-accent { display: none; }
 
+  /* SAGA SELECTOR */
+  .saga-selector-section { margin-bottom: 0; }
+  .saga-display-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 10px;
+    background: var(--plate);
+    border: 1px solid var(--border);
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+    overflow: hidden;
+    position: relative;
+  }
+  .saga-display-row::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--frost), transparent);
+    opacity: 0.3;
+  }
+  .saga-display-item {
+    flex: 1;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .saga-display-divider {
+    width: 1px;
+    background: var(--border2);
+    margin: 8px 0;
+  }
+  .saga-display-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--glacier);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .saga-display-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--frost);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .saga-display-value.secondary { color: var(--glacier); }
+  .saga-display-value.empty { color: var(--text3); font-weight: 400; font-size: 12px; }
+  .saga-pill {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 13px;
+    border: 1px solid var(--border2);
+    background: var(--plate);
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    clip-path: polygon(5px 0%, 100% 0%, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0% 100%, 0% 5px);
+    position: relative;
+  }
+  .saga-pill:active { opacity: 0.6; }
+  .saga-pill.primary {
+    border-color: var(--frost);
+    background: rgba(107,179,210,0.12);
+    color: var(--frost);
+  }
+  .saga-pill.primary::after {
+    content: ' P';
+    font-size: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--frost);
+    opacity: 0.8;
+  }
+  .saga-pill.secondary {
+    border-color: var(--glacier);
+    background: rgba(58,127,160,0.1);
+    color: var(--glacier);
+  }
+  .saga-pill.secondary::after {
+    content: ' S';
+    font-size: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--glacier);
+    opacity: 0.8;
+  }
+
   /* EQUIPMENT SELECTOR */
   .equip-section { margin-bottom: 0; }
   .equip-header {
@@ -885,6 +975,38 @@
     <div class="rune-divider"></div>
   </div>
   <div class="home-screen">
+    <!-- SAGA SELECTOR -->
+    <div class="saga-selector-section">
+      <div class="equip-header">
+        <div class="equip-title">🐺 Doctrinas de Guerra</div>
+        <div class="equip-toggle-btn" id="saga-toggle-btn" onclick="toggleSagaPanel()">▲ Colapsar</div>
+      </div>
+      <div class="saga-display-row">
+        <div class="saga-display-item">
+          <div class="saga-display-label">PRIMARIA</div>
+          <div class="saga-display-value" id="saga-primary-display">— Sin elegir —</div>
+        </div>
+        <div class="saga-display-divider"></div>
+        <div class="saga-display-item">
+          <div class="saga-display-label">SECUNDARIA</div>
+          <div class="saga-display-value secondary" id="saga-secondary-display">— Sin elegir —</div>
+        </div>
+      </div>
+      <div class="equip-pills-wrapper" id="saga-pills-wrapper">
+        <div class="equip-group-label">Toca una vez = Primaria · Dos veces = Secundaria · Tres = Quitar</div>
+        <div class="equip-pills" id="saga-pills">
+          <div class="saga-pill" data-id="1" data-name="Furia del Wulfen" onclick="toggleSaga(this)">Furia del Wulfen</div>
+          <div class="saga-pill" data-id="2" data-name="Colmillo contra Colmillo" onclick="toggleSaga(this)">Colmillo contra Colmillo</div>
+          <div class="saga-pill" data-id="3" data-name="Voluntad de Hierro" onclick="toggleSaga(this)">Voluntad de Hierro</div>
+          <div class="saga-pill" data-id="4" data-name="Sigilosos" onclick="toggleSaga(this)">Sigilosos</div>
+          <div class="saga-pill" data-id="5" data-name="Paso del Lobo" onclick="toggleSaga(this)">Paso del Lobo</div>
+          <div class="saga-pill" data-id="6" data-name="Piel de Fenris" onclick="toggleSaga(this)">Piel de Fenris</div>
+          <div class="saga-pill" data-id="7" data-name="Ojo del Depredador" onclick="toggleSaga(this)">Ojo del Depredador</div>
+          <div class="saga-pill" data-id="8" data-name="Rugido del Pack" onclick="toggleSaga(this)">Rugido del Pack</div>
+        </div>
+      </div>
+      <div class="tracker-divider"></div>
+    </div>
     <!-- EQUIPMENT SELECTOR -->
     <div class="equip-section">
       <div class="equip-header">
@@ -1743,6 +1865,97 @@ function showDetail(category, itemId, fromHome) {
   window.scrollTo(0, 0);
 }
 
+// ── SAGA SELECTOR ────────────────────────────────────────────────────────────
+let sagaPrimary = null;
+let sagaSecondary = null;
+let sagaPanelOpen = true;
+
+function toggleSagaPanel() {
+  sagaPanelOpen = !sagaPanelOpen;
+  const wrapper = document.getElementById('saga-pills-wrapper');
+  const btn = document.getElementById('saga-toggle-btn');
+  if (sagaPanelOpen) {
+    wrapper.classList.remove('collapsed');
+    btn.textContent = '▲ Colapsar';
+  } else {
+    wrapper.classList.add('collapsed');
+    btn.textContent = '▼ Editar';
+  }
+}
+
+function toggleSaga(pill) {
+  const id = pill.dataset.id;
+  const name = pill.dataset.name;
+
+  if (sagaPrimary === id) {
+    // Was primary → make secondary
+    sagaPrimary = null;
+    sagaSecondary = id;
+  } else if (sagaSecondary === id) {
+    // Was secondary → deselect
+    sagaSecondary = null;
+  } else if (!sagaPrimary) {
+    // Empty primary → set primary
+    sagaPrimary = id;
+  } else if (!sagaSecondary) {
+    // Primary set, no secondary → set secondary
+    sagaSecondary = id;
+  } else {
+    // Both set → replace secondary
+    sagaSecondary = id;
+  }
+
+  // Auto-collapse when both selected
+  if (sagaPrimary && sagaSecondary) sagaPanelOpen = false;
+  else sagaPanelOpen = true;
+
+  renderSagas();
+}
+
+function renderSagas() {
+  // Update pills
+  document.querySelectorAll('.saga-pill').forEach(pill => {
+    const id = pill.dataset.id;
+    pill.className = 'saga-pill';
+    if (sagaPrimary === id) pill.classList.add('primary');
+    else if (sagaSecondary === id) pill.classList.add('secondary');
+  });
+
+  // Update display
+  const sagas = {};
+  document.querySelectorAll('.saga-pill').forEach(p => sagas[p.dataset.id] = p.dataset.name);
+
+  const primEl = document.getElementById('saga-primary-display');
+  const secEl = document.getElementById('saga-secondary-display');
+
+  if (sagaPrimary) {
+    primEl.textContent = sagas[sagaPrimary];
+    primEl.className = 'saga-display-value';
+  } else {
+    primEl.textContent = '— Sin elegir —';
+    primEl.className = 'saga-display-value empty';
+  }
+
+  if (sagaSecondary) {
+    secEl.textContent = sagas[sagaSecondary];
+    secEl.className = 'saga-display-value secondary';
+  } else {
+    secEl.textContent = '— Sin elegir —';
+    secEl.className = 'saga-display-value secondary empty';
+  }
+
+  // Toggle panel
+  const wrapper = document.getElementById('saga-pills-wrapper');
+  const btn = document.getElementById('saga-toggle-btn');
+  if (sagaPanelOpen) {
+    wrapper.classList.remove('collapsed');
+    btn.textContent = '▲ Colapsar';
+  } else {
+    wrapper.classList.add('collapsed');
+    btn.textContent = '▼ Editar';
+  }
+}
+
 // ── EQUIPMENT SELECTOR ───────────────────────────────────────────────────────
 const MAX_EQUIP = 4;
 let selectedEquip = new Set();
@@ -1832,8 +2045,12 @@ function resetTracker() {
   usedArdids.clear();
   selectedEquip.clear();
   equipPanelOpen = true;
+  sagaPrimary = null;
+  sagaSecondary = null;
+  sagaPanelOpen = true;
   renderEquip();
   renderTracker();
+  renderSagas();
 }
 
 function renderTracker() {
@@ -1848,6 +2065,7 @@ function renderTracker() {
 createParticles();
 renderEquip();
 renderTracker();
+renderSagas();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
